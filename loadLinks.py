@@ -4,10 +4,30 @@ Created on Mon Aug 22 22:57:23 2011
 
 @author: antoanne
 """
-import httplib, xml.dom.minidom
+import httplib
 from BeautifulSoup import BeautifulSoup
 import re
 
+SITE = "www.cifraclub.com.br/cifras"
+classList = [{'tag' : 'li',
+             'classes': ['img li1',
+                         'img li2',
+                         'img li3',
+                         'img li4',
+                         'img ',
+                         '',
+                         'fix3 ',
+                         'fix4 '], 
+            },]
+
+classCifra = [{'tag':'h1',
+               'id':['ai_musica']},
+              {'tag':'h2',
+               'id':['ai_artista']},
+              {'tag':'pre',
+               'id':['ct_tom', 'ct_cifra']},
+             ]
+             
 def req(url):
     adress = url.replace("http://", "").split("/")
     conn = httplib.HTTPConnection(adress[0])
@@ -26,57 +46,37 @@ def req(url):
         return r1.read()
     else:
         print "erro..."
-    
-dados = req("www.cifraclub.com.br/cifras")
-soup = BeautifulSoup(dados)
 
-c = 0
-liData = soup.findAll('li', attrs={'class':'img li1'})
-for li in liData:
-    print li, '\n'
-    c+=1
+def loadCifra(local):
+    cifra = req(local)
+    soup = BeautifulSoup(cifra)
+    for item in classCifra:
+        tag = item['tag']
+        for cls in item['id']:
+            print cls
+            tagData = soup.findAll(tag, attrs={'id':cls})
+            for d in tagData:
+                print d
 
-liData = soup.findAll('li', attrs={'class':'img li2'})
-for li in liData:
-    print li, '\n'
-    c+=1
+def extractLink(soap):
+    #urls = re.findall(r'href=[\'"]?([^\'" >]+)', html, re.I)
+    for tag in soap.findAll('a', href=True):
+        cifraLink = re.findall('.*?([^/\'" >]+)', SITE)[0] + tag['href']
+        print cifraLink
+        loadCifra(cifraLink)
 
-liData = soup.findAll('li', attrs={'class':'img li3'})
-for li in liData:
-    print li, '\n'
-    c+=1
+def loadData(local, tag, cls):
+    soup = BeautifulSoup(local)
+    tagData = soup.findAll(tag, attrs={'class':cls})
+    for d in tagData:
+        extractLink(d)
 
-liData = soup.findAll('li', attrs={'class':'img li4'})
-for li in liData:
-    print li, '\n'
-    c+=1
+def loadHomeMusicList(local, dic):
+    for item in dic:
+        tag = item['tag']
+        for cls in item['classes']:
+            loadData(local, tag, cls)
+            break
 
-liData = soup.findAll('li', attrs={'class':'img '})
-for li in liData:
-    print li, '\n'
-    c+=1
-
-liData = soup.findAll('li', attrs={'class':''})
-for li in liData:
-    print li, '\n'
-    c+=1
-
-liData = soup.findAll('li', attrs={'class':'fix3 '})
-for li in liData:
-    print li, '\n'
-    c+=1
-
-liData = soup.findAll('li', attrs={'class':'fix4 '})
-for li in liData:
-    print li, '\n'
-    c+=1
-
-print c
-
-divData = liData[0].findAll('div')
-
-olStrong = olData[0].findAll('strong')
-for link in olStrong:
-    olLink = link.findAll('a')
-    print olLink, '\n'
-#soup = BeautifulSoup(olData[0])
+local = req(SITE)
+loadHomeMusicList(local, classList)
