@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 """
 Created on Mon Aug 22 22:57:23 2011
 
@@ -65,14 +64,14 @@ def loadCifra(local):
             allTagData = []
             for d in tagData:
                 allTagData.append(str(d))
-            cifraData[cls] = allTagData
+            cifraData[cls.split("_")[1]] = allTagData
     return cifraData
 
-def writeToDictFile(data, fileName):
-    f = open(PATH+fileName+'.dictFile','w')
-    f.write(str(data))
+def writeToDictFile(data, fileName):    
+    f = open(PATH + re.findall('.*?([^/\'" >]+)', SITE)[0] + '.dictFile', 'a')
+    f.write('%s\r\n' % str(data))
     f.close()
-
+    
 def readFromDictFile(fileName):
     f = open(PATH+fileName+'.dictFile','r')
     my_dict = eval(f.read())
@@ -97,7 +96,10 @@ def loadHomeMusicList(local, dic):
     for item in dic:
         tag = item['tag']
         for cls in item['classes']:
-            loadData(local, tag, cls)
+            try:
+                loadData(local, tag, cls)
+            except:
+                print "Erro: %s" % local
             #break
 
 local = req(SITE)
