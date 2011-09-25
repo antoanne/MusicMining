@@ -1,0 +1,22 @@
+MisicMining 0.1a
+  Desenvolvido por Antoanne Pontes
+  antoanne@gmail.com
+
+MisicMining 
+
+Novidades desta versão
+
+Requisitos de Hardware e software:
+ - Python 2.7.1+
+ - Bibliotecas Python: httplib, BeautifulSoup, BeautifulStoneSoup re, sys, 
+numpy, matplotlib, pylab, sqlite3
+
+Instruções de utilização
+
+Problemas conhecidos
+ - Erro ao tentar fazer o parser em algumas cifras
+
+Histórico de versões
+
+MusicMining de Antoanne Pontes é licenciado sob uma Licença Creative Commons 
+Atribuição-Uso não-comercial-Compartilhamento pela mesma licença 3.0 Unported.

@@ -1,32 +1,29 @@
+# -*- coding: utf-8 -*-
 """
-Created on Mon Aug 22 22:57:23 2011
+Created on Sat Sep 24 11:51:03 2011
 
 @author: antoanne
 """
 import httplib
 from BeautifulSoup import BeautifulSoup
-import re
+import re, sys
 
-#http://www.englishexperts.com.br/2008/01/03/as-palavras-mais-comuns-da-lingua-inglesa/
+if len(sys.argv) < 2:
+    sys.exit('Usage: %s <letra[A-Z]>' % sys.argv[0])
 
-#http://www.e-chords.com/browse/a
-#http://www.e-chords.com/site/text-version.htm?p3=15746
-
-SITE = "www.cifraclub.com.br/cifras"
+SITE = "www.cifraclub.com.br/cifras/letra_%s.htm" % sys.argv[1].lower()
 PATH = "/home/antoanne/Dropbox/Work-2011/Mestrado/Modelagem/musica/data/"
-classListTop1000 = [{'tag' : 'li',
-             'classes': ['img li1',
-                         'img li2',
-                         'img li3',
-                         'img li4',
-                         'img ',
-                         '',
-                         'fix3 ',
-                         'fix4 '], 
-            },]
-            
 classListABC = [{'tag' : 'ul',
-             'classes': ['lis1'], 
+             'classes': ['lis1',
+                         'lis2'], 
+            },]
+
+classListHotsite = [{'tag' : 'a',
+             'classes': ['ac_ol_a'], 
+            },]
+
+classListMusic = [{'tag' : 'ol',
+             'classes': ['ac_ol'], 
             },]
 
 classCifra = [{'tag':'h1',
@@ -36,6 +33,8 @@ classCifra = [{'tag':'h1',
               {'tag':'pre',
                'id':['ct_tom', 'ct_cifra']},
              ]
+
+linksCarregados = []
              
 def req(url):
     adress = url.replace("http://", "").split("/")
@@ -62,7 +61,6 @@ def loadCifra(local):
     for item in classCifra:
         tag = item['tag']
         for cls in item['id']:
-            #print cls
             tagData = soup.findAll(tag, attrs={'id':cls})
             allTagData = []
             for d in tagData:
@@ -71,7 +69,7 @@ def loadCifra(local):
     return cifraData
 
 def writeToDictFile(data, fileName):    
-    f = open(PATH + re.findall('.*?([^/\'" >]+)', SITE)[0] + '.dictFile', 'a')
+    f = open(PATH + re.findall('.*?([^/\'" >]+)', SITE)[0] + '_' + sys.argv[1].upper() +'.dictFile', 'a')
     f.write('%s\r\n' % str(data))
     f.close()
     
@@ -81,32 +79,34 @@ def readFromDictFile(fileName):
     f.close()
     print "FROM FILE: ", my_dict['ai_musica']
 
-def extractLink(soap):
+def extractLink(soap, hotsite=None):
     for tag in soap.findAll('a', href=True):
-        cifraLink = re.findall('.*?([^/\'" >]+)', SITE)[0] + tag['href']
-        print "Cifra:", cifraLink
-        writeToDictFile(loadCifra(cifraLink), cifraLink.rstrip("/").replace("/","_"))
+        if (len(tag['href'].split('#')) <= 1):
+            if (hotsite):
+                link = re.findall('.*?([^/\'" >]+)', SITE)[0] + "/" + hotsite + tag['href'].lstrip("/")                
+                if (link not in linksCarregados):
+                    print "HOTSITE:", link
+                    writeToDictFile(loadCifra(link), link.rstrip("/").replace("/","_"))
+                linksCarregados.append(link)
+            else:
+                link = re.findall('.*?([^/\'" >]+)', SITE)[0] + "/" + tag['href'].lstrip("/")
+                print "SITE:", link
+                loadHomeMusicList( req(link), classListMusic, tag['href'].lstrip("/") )
 
-def loadData(local, tag, cls):
-    print tag, cls
+def loadData(local, tag, cls, hotsite=None):
     soup = BeautifulSoup(local)
     tagData = soup.findAll(tag, attrs={'class':cls})
+    #print tag, cls, len(tagData)
     for d in tagData:
-        extractLink(d)
+        extractLink(d, hotsite)
 
-def loadHomeMusicList(local, dic):
+def loadHomeMusicList(local, dic, hotsite=None):
     for item in dic:
         tag = item['tag']
         for cls in item['classes']:
             try:
-                loadData(local, tag, cls)
+                loadData(local, tag, cls, hotsite)
             except:
-                print "Erro: %s" % local
-        break
+                print "Erro ao ler o html"
 
-local = req(SITE)
-loadHomeMusicList(local, classListTop1000)
-for s in SITE:
-    local = req(s)
-    loadHomeMusicList(local, classListABC)
-    break
+loadHomeMusicList(req(SITE), classListABC)
