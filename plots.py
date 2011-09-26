@@ -26,8 +26,8 @@ def constructQTDPlot(tons):
     qtd = [tons[x] for x in tons]
     lbl = [x for x in tons]
     fig = plot.figure()
-    fig.canvas.set_window_title('Tons mais tocados')
-    plot.title('Tons mais tocados')
+    fig.canvas.set_window_title('Tons mais comuns')
+    plot.title('Tons mais comuns')
     plot.subplot(111)
     plot.barh(ind, qtd, 0.5, color='green', align='center')
     pylab.yticks(ind,lbl)
