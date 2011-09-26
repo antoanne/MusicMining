@@ -8,29 +8,36 @@ import plots as plots
 from BeautifulSoup import BeautifulStoneSoup
 from sqlite3 import dbapi2 as sqlite
 import re, sys
+import mingus.core.notes as notes
+from mingus.containers.Note import Note
 
 PATH = "/home/antoanne/Dropbox/Work-2011/Mestrado/Modelagem/musica/data/"
 FILE = "www.cifraclub.com.br_%s.cleaned"
 
 letras = map(chr, range(65, 91))
+#letras = map(chr, range(65, 66))
 
 acords = {}
 tons = {}
 
 def acumulaTons(d, tons):
     if (d['tom'] != ""):
-        if (d['tom'] in tons.keys()):
-            tons[d['tom']] += 1
-        else:
-            tons[d['tom']] = 1
+        try:
+            if (notes.is_valid_note(d['tom'])):
+                if (d['tom'] in tons.keys()):
+                    tons[d['tom']] += 1
+                else:
+                    tons[d['tom']] = 1
+        except:
+            pass
 
 def acumulaAcordes(d, acords):
     if (len(d['cifra']) > 0):
         for c in d['cifra']:
-            if (c in acords.keys()):
-                acords[c] += 1
+            if (str(c) in acords.keys()):
+                acords[str(c)] += 1
             else:
-                acords[c] = 1
+                acords[str(c)] = 1
 
 def wordleFile(fileName, d):
     f = open(PATH+fileName +'.wordle','w')
@@ -58,3 +65,5 @@ for l in letras:
     except:
         pass
 wordleFile('acordes', acords)
+plots.constructQTDPlot(tons)
+#plots.constructQTDPlot(acords)
