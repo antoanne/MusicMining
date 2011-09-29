@@ -5,6 +5,7 @@ Created on Sat Sep 24 23:41:16 2011
 @author: antoanne
 """
 import plots as plots
+from plot import plot, subplot, title, ylabel, xlabel, grid, 
 from BeautifulSoup import BeautifulStoneSoup
 from sqlite3 import dbapi2 as sqlite
 import re, sys
@@ -64,6 +65,37 @@ for l in letras:
         readFromDictFile(FILE % l, tons, acords)
     except:
         pass
-wordleFile('acordes', acords)
-plots.constructQTDPlot(tons)
+    
+def reverse_numeric(x, y):
+    return y - x
+
+def acordesMaisTocados(acords):
+    l=sorted([acords[x] for x in acords], cmp=reverse_numeric)
+    mais = {}
+    p = .02
+    for x in acords:
+        if (acords[x] >= min(l[:int(len(l)*p)])):
+            print x, min(l[:int(len(l)*p)])
+            mais[x] = acords[x]
+    return mais
+
+def plotRepeticoes():
+    p = .02
+    l=sorted([acords[x] for x in acords], cmp=reverse_numeric)
+    subplot(211)
+    title(unicode('Repetições dos acordes'))
+    ylabel(unicode('repetições'))
+    xlabel('acordes')
+    grid(True)
+    plot(l)
+    subplot(212)
+    title(unicode('\n1% das repetições'))
+    ylabel(unicode('repetições'))
+    xlabel('acordes')
+    plot(l[:int(len(l)*p)])
+
+plotRepeticoes()
+wordleFile('maisTocados',acordesMaisTocados(acords))
+#wordleFile('acordes', acords)
+#plots.constructQTDPlot(tons)
 #plots.constructQTDPlot(acords)
